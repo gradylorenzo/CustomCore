@@ -7,7 +7,7 @@ using NCore.Settings;
 using NCore.Managers;
 
 [RequireComponent(typeof(AudioSource))]
-public class VolumeController : MonoBehaviour
+public class NVolumeController : MonoBehaviour
 {
     public enum AudioType
     {

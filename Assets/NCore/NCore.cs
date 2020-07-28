@@ -15,6 +15,10 @@ namespace NCore
 
         //Directory that save files will be placed in.
         public const string SavesFileLocation = "saves";
+
+        //Some identifier where the user can send a screenshot
+        //should a critical NDebug.Log be raised
+        public const string DeveloperID = "Discord: Nyxton#6759";
     }
 
     namespace Managers
@@ -40,23 +44,6 @@ namespace NCore
         {
             public delegate void GenericEvent();
             public static GenericEvent UpdateSettings;
-        }
-
-        public static class NDebug
-        {
-            public enum DebugEventType
-            {
-                message = 0,
-                success = 1,
-                warning = 2,
-                error = 3
-            }
-
-            public delegate void GenericDebugEvent(DebugEventType type, float time, string message);
-            public static GenericDebugEvent Log;
-
-            public delegate void StaticDisplayInformationEvent(string name, string info);
-            public static StaticDisplayInformationEvent UpdateSDI;
         }
     }
 
@@ -175,13 +162,13 @@ namespace NCore
                 }
                 catch (ApplicationException e)
                 {
-                    NDebug.Log(NDebug.DebugEventType.error, Time.time, "Failed to deserialize settings");
+                    NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, "ERR_IO_CANNOT_DESERIALIZE_SETTINGS"));
                     Debug.LogError(e.InnerException);
                     tr.Close();
                 }
                 finally
                 {
-                    NDebug.Log(NDebug.DebugEventType.success, Time.time, "Successfully deserialized settings");
+                    NDebug.Log(NDebug.DebugType.message, new NDebug.Info(Time.time, "SUC_IO_DESERIALIZED_SETTINGS"));
                     tr.Close();
                     newSettings = tmp;
                 }
@@ -216,13 +203,13 @@ namespace NCore
                         }
                         catch (ApplicationException e)
                         {
-                            NDebug.Log(NDebug.DebugEventType.error, Time.time, "Failed to deserialize save data: " + filename);
+                            NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, "ERR_IO_FAILED_TO_DESERIALIZE: " + filename));
                             Debug.LogError(e.InnerException);
                             tr.Close();
                         }
                         finally
                         {
-                            NDebug.Log(NDebug.DebugEventType.success, Time.time, "Failed to deserialize save data: " + filename);
+                            NDebug.Log(NDebug.DebugType.message, new NDebug.Info(Time.time, "SUC_IO_DESERIALIZED: " + filename));
                             tr.Close();
                             newSaveData = tmp;
                             playerName = filename;
@@ -232,7 +219,7 @@ namespace NCore
                     }
                     else
                     {
-                        NDebug.Log(NDebug.DebugEventType.warning, Time.time, "ERR_NO_FILE_EXISTS: " + filename);
+                        NDebug.Log(NDebug.DebugType.warning, new NDebug.Info(Time.time, "ERR_IO_NO_FILE_EXISTS: " + filename));
                         throw new Exception("ERR_NO_FILE_EXISTS");
                     }
                 }
@@ -252,7 +239,7 @@ namespace NCore
                     }
                     else
                     {
-                        NDebug.Log(NDebug.DebugEventType.warning, Time.time, "ERR_ALREADY_EXISTS: " + filename);
+                        NDebug.Log(NDebug.DebugType.warning, new NDebug.Info(Time.time, "ERR_FILE_ALREADY_EXISTS: " + filename));
                         throw new Exception("ERR_FILE_ALREADY_EXISTS");
                     }
                 }
@@ -272,13 +259,13 @@ namespace NCore
                         }
                         else
                         {
-                            NDebug.Log(NDebug.DebugEventType.error, Time.time, "ERR_NO_SAVE_DATA");
-                            throw new Exception("ERR_NO_SAVE_DATA");
+                            NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, "ERR_IO_NO_SAVE_DATA_TO_WRITE"));
+                            throw new Exception("ERR_IO_NO_SAVE_DATA_TO_WRITE");
                         }
                     }
                     else
                     {
-                        NDebug.Log(NDebug.DebugEventType.error, Time.time, "ERR_NO_FILE_EXISTS: " + playerName);
+                        NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, "ERR_NO_FILE_EXISTS: " + playerName));
                         throw new Exception("ERR_NO_FILE_EXISTS");
                     }
                 }
@@ -290,7 +277,7 @@ namespace NCore
                     saveData = null;
                     playerName = null;
 
-                    NDebug.Log(NDebug.DebugEventType.message, Time.time, "Cleared save cache");
+                    NDebug.Log(NDebug.DebugType.message, new NDebug.Info(Time.time, "SUC_IO_CLEARED_CACHE"));
                 }
 
                 //Get a list of filenames that can successfully be deserialized.
@@ -313,7 +300,7 @@ namespace NCore
                         }
                         catch(ApplicationException e)
                         {
-                            NDebug.Log(NDebug.DebugEventType.error, Time.time, e.InnerException.ToString());
+                            NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, e.InnerException.ToString()));
                             Debug.LogError(e.InnerException);
                         }
                         finally
@@ -330,6 +317,183 @@ namespace NCore
         public class SaveData
         {
             //DATA YOU WANT TO SAVE GOES HERE
+        }
+    }
+
+    namespace MoreTransform
+    {
+        [Serializable]
+        public struct DoubleVector3
+        {
+            #region Members
+            public double x;
+            public double y;
+            public double z;
+            private double _magnitude { get; set; }
+            #endregion
+
+            #region Properties
+            public double magnitude
+            {
+                get { return _magnitude; }
+                set { _magnitude = value; }
+            }
+            #endregion
+
+            #region Constructors
+            public DoubleVector3(double X, double Y, double Z)
+            {
+                x = X;
+                y = Y;
+                z = Z;
+                _magnitude = Math.Sqrt(x * x + y * y + z * z);
+            }
+            #endregion
+
+            #region Static Properties
+            public static DoubleVector3 zero
+            {
+                get { return new DoubleVector3(0, 0, 0); }
+            }
+
+            public static DoubleVector3 up
+            {
+                get { return new DoubleVector3(0, 1, 0); }
+            }
+
+            public static DoubleVector3 right
+            {
+                get { return new DoubleVector3(1, 0, 0); }
+            }
+
+            public static DoubleVector3 forward
+            {
+                get { return new DoubleVector3(0, 0, 1); }
+            }
+            #endregion
+
+            #region Static Methods
+
+            //Lerp
+            public static DoubleVector3 Lerp(DoubleVector3 a, DoubleVector3 b, float c)
+            {
+                double x = (a.x + c * (b.x - a.x));
+                double y = (a.y + c * (b.y - a.y));
+                double z = (a.z + c * (b.z - a.z));
+
+                return new DoubleVector3(x, y, z);
+            }
+
+            //MoveTowards
+            public static DoubleVector3 MoveTowards(DoubleVector3 a, DoubleVector3 b, double c)
+            {
+                DoubleVector3 newPos = b - a;
+                double magnitude = newPos.magnitude;
+                if (magnitude <= c || magnitude == 0f)
+                    return b;
+                return a + newPos / magnitude * c;
+            }
+
+            //FromSingleV3
+            public static DoubleVector3 FromVector3(Vector3 v)
+            {
+                return new DoubleVector3(v.x, v.y, v.z);
+            }
+
+            //Distance
+            public static double Distance(DoubleVector3 a, DoubleVector3 b)
+            {
+                return Math.Sqrt(((b.x - a.x) * (b.x - a.x)) + ((b.y - a.y) * (b.y - a.y)) + ((b.z - a.z) * (b.z - a.z)));
+            }
+
+            //ToSingleV3
+            public static Vector3 ToVector3(DoubleVector3 v)
+            {
+                float x = Convert.ToSingle(v.x);
+                float y = Convert.ToSingle(v.y);
+                float z = Convert.ToSingle(v.z);
+
+                return new Vector3(x, y, z);
+            }
+
+
+            #endregion
+
+            #region Operators
+            public static DoubleVector3 operator +(DoubleVector3 a, DoubleVector3 b)
+            {
+                DoubleVector3 v = new DoubleVector3(a.x + b.x, a.y + b.y, a.z + b.z);
+                return v;
+            }
+            public static DoubleVector3 operator -(DoubleVector3 a, DoubleVector3 b)
+            {
+                DoubleVector3 v = new DoubleVector3(a.x - b.x, a.y - b.y, a.z - b.z);
+                return v;
+            }
+            public static DoubleVector3 operator *(DoubleVector3 a, DoubleVector3 b)
+            {
+                DoubleVector3 v = new DoubleVector3(a.x * b.x, a.y * b.y, a.z * b.z);
+                return v;
+            }
+            public static DoubleVector3 operator *(DoubleVector3 a, float b)
+            {
+                DoubleVector3 v = new DoubleVector3(a.x * b, a.y * b, a.z * b);
+                return v;
+            }
+
+            public static DoubleVector3 operator *(DoubleVector3 a, double b)
+            {
+                DoubleVector3 v = new DoubleVector3(a.x * b, a.y * b, a.z * b);
+                return v;
+            }
+            public static DoubleVector3 operator /(DoubleVector3 a, DoubleVector3 b)
+            {
+                DoubleVector3 v = new DoubleVector3(a.x / b.x, a.y / b.y, a.z / b.z);
+                return v;
+            }
+            public static DoubleVector3 operator /(DoubleVector3 a, double b)
+            {
+                DoubleVector3 v = new DoubleVector3(a.x / b, a.y / b, a.z / b);
+                return v;
+            }
+            public static bool operator ==(DoubleVector3 a, DoubleVector3 b)
+            {
+                if (a.x == b.x && a.y == b.y && a.z == b.z)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            public static bool operator !=(DoubleVector3 a, DoubleVector3 b)
+            {
+                if (a.x != b.x || a.y != b.y || a.z != b.z)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            #endregion
+
+            #region Overrides
+            public override bool Equals(object obj)
+            {
+                if (obj == null || this.GetType() != obj.GetType())
+                {
+                    return false;
+                }
+                return (this.x == ((DoubleVector3)obj).x && this.y == ((DoubleVector3)obj).y && this.z == ((DoubleVector3)obj).z);
+            }
+            public override int GetHashCode()
+            {
+                return this.GetHashCode();
+            }
+            #endregion
         }
     }
 }
