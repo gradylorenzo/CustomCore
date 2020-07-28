@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using NyxtonCore;
-using NyxtonCore.Managers;
+using NCore;
+using NCore.Managers;
 using UnityEngine.SceneManagement;
 
 public class GameManagerComponent : MonoBehaviour
 {
-    public Scene defaultScene;
+    public int defaultScene;
 
     private void Awake()
     {
@@ -17,7 +17,8 @@ public class GameManagerComponent : MonoBehaviour
 
     private void Start()
     {
-        SceneManager.LoadScene(defaultScene.name);
+        if(defaultScene > -1)
+        SceneManager.LoadScene(defaultScene);
     }
 
     //Default event subscribers to prevent null reference exceptions.

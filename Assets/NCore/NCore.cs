@@ -3,8 +3,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 using UnityEngine;
+using NCore.Managers;
 
-namespace NyxtonCore
+namespace NCore
 {
     public static class Config
     {
@@ -39,6 +40,23 @@ namespace NyxtonCore
         {
             public delegate void GenericEvent();
             public static GenericEvent UpdateSettings;
+        }
+
+        public static class NDebug
+        {
+            public enum DebugEventType
+            {
+                message = 0,
+                success = 1,
+                warning = 2,
+                error = 3
+            }
+
+            public delegate void GenericDebugEvent(DebugEventType type, float time, string message);
+            public static GenericDebugEvent Log;
+
+            public delegate void StaticDisplayInformationEvent(string name, string info);
+            public static StaticDisplayInformationEvent UpdateSDI;
         }
     }
 
@@ -157,13 +175,13 @@ namespace NyxtonCore
                 }
                 catch (ApplicationException e)
                 {
-                    //Notify.Notify.Error("Failed to deserialize Settings , see console for more details");
+                    NDebug.Log(NDebug.DebugEventType.error, Time.time, "Failed to deserialize settings");
                     Debug.LogError(e.InnerException);
                     tr.Close();
                 }
                 finally
                 {
-                    //Notify.Notify.Success("Successfully deserialized " + name);
+                    NDebug.Log(NDebug.DebugEventType.success, Time.time, "Successfully deserialized settings");
                     tr.Close();
                     newSettings = tmp;
                 }
@@ -198,13 +216,13 @@ namespace NyxtonCore
                         }
                         catch (ApplicationException e)
                         {
-                            //Notify.Notify.Error("Failed to deserialize SaveData , see console for more details");
+                            NDebug.Log(NDebug.DebugEventType.error, Time.time, "Failed to deserialize save data: " + filename);
                             Debug.LogError(e.InnerException);
                             tr.Close();
                         }
                         finally
                         {
-                            //Notify.Notify.Success("Successfully deserialized " + name);
+                            NDebug.Log(NDebug.DebugEventType.success, Time.time, "Failed to deserialize save data: " + filename);
                             tr.Close();
                             newSaveData = tmp;
                             playerName = filename;
@@ -214,6 +232,7 @@ namespace NyxtonCore
                     }
                     else
                     {
+                        NDebug.Log(NDebug.DebugEventType.warning, Time.time, "ERR_NO_FILE_EXISTS: " + filename);
                         throw new Exception("ERR_NO_FILE_EXISTS");
                     }
                 }
@@ -233,6 +252,7 @@ namespace NyxtonCore
                     }
                     else
                     {
+                        NDebug.Log(NDebug.DebugEventType.warning, Time.time, "ERR_ALREADY_EXISTS: " + filename);
                         throw new Exception("ERR_FILE_ALREADY_EXISTS");
                     }
                 }
@@ -252,11 +272,13 @@ namespace NyxtonCore
                         }
                         else
                         {
+                            NDebug.Log(NDebug.DebugEventType.error, Time.time, "ERR_NO_SAVE_DATA");
                             throw new Exception("ERR_NO_SAVE_DATA");
                         }
                     }
                     else
                     {
+                        NDebug.Log(NDebug.DebugEventType.error, Time.time, "ERR_NO_FILE_EXISTS: " + playerName);
                         throw new Exception("ERR_NO_FILE_EXISTS");
                     }
                 }
@@ -267,6 +289,8 @@ namespace NyxtonCore
                     //Clears save data currently cached in saveData
                     saveData = null;
                     playerName = null;
+
+                    NDebug.Log(NDebug.DebugEventType.message, Time.time, "Cleared save cache");
                 }
 
                 //Get a list of filenames that can successfully be deserialized.
@@ -289,6 +313,7 @@ namespace NyxtonCore
                         }
                         catch(ApplicationException e)
                         {
+                            NDebug.Log(NDebug.DebugEventType.error, Time.time, e.InnerException.ToString());
                             Debug.LogError(e.InnerException);
                         }
                         finally

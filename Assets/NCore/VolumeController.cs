@@ -1,10 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using NyxtonCore;
+using NCore;
 using System;
-using NyxtonCore.Settings;
-using NyxtonCore.Managers;
+using NCore.Settings;
+using NCore.Managers;
 
 [RequireComponent(typeof(AudioSource))]
 public class VolumeController : MonoBehaviour
