@@ -40,16 +40,18 @@ public class NDebugPanel: MonoBehaviour
 
     private void Awake()
     {
+        DontDestroyOnLoad(gameObject);
+
         NDebug.Log += DebugEvent;
         NDebug.UpdateSDI += UpdateSDI;
 
-        NDebug.Log(NDebug.DebugType.message, new NDebug.Info(Time.time, "NDebug.Log started and running..", this));
         GetSystemSpecs();
+        SetStyle();
     }
 
     private void Start()
     {
-        SetStyle();
+        NDebug.Log(NDebug.DebugType.message, new NDebug.Info(Time.time, "NDebug is active!", this));
     }
 
     private void Update()
@@ -72,6 +74,7 @@ public class NDebugPanel: MonoBehaviour
         NDebug.UpdateSDI("system.shadows", "Shadows: " + SystemInfo.supportsShadows);
         NDebug.UpdateSDI("system.accel", "Accelerometer: " + SystemInfo.supportsAccelerometer);
         NDebug.UpdateSDI("system.gyro", "Gyroscope: " + SystemInfo.supportsGyroscope);
+        NDebug.UpdateSDI("space", " ");
     }
 
     private void SetStyle()
@@ -119,6 +122,8 @@ public class NDebugPanel: MonoBehaviour
             NDebug.UpdateSDI("fps", fps);
             fpsLastRefresh = Time.time;
         }
+
+        NDebug.UpdateSDI("time", "Time.time: " + Time.time.ToString("0.##"));
     }
 
     private void DebugEvent(NDebug.DebugType type, NDebug.Info info)
@@ -175,108 +180,112 @@ public class NDebugPanel: MonoBehaviour
     {
         if (showDebug)
         {
-            GUILayout.BeginArea(new Rect(0, 0, 900, Screen.height), style[1]);
-            GUILayout.BeginHorizontal();
+            GUILayout.BeginArea(new Rect(0, 0, 650, Screen.height), style[1]);
+                GUILayout.BeginHorizontal();
+                    #region View Switches
+                    GUILayout.BeginVertical();
 
-            #region View Switches
-            GUILayout.BeginVertical(GUILayout.Width(100));
-            GUI.color = DebugColors[0];
-            if (GUILayout.Button("Message"))
-            {
-                display = NDebug.DebugType.message;
-                logScrollPosition.y = Mathf.Infinity;
-            }
+                        GUILayout.BeginHorizontal();
+                            GUI.color = DebugColors[0];
+                            if (GUILayout.Button("Message", GUILayout.Width(75)))
+                            {
+                                display = NDebug.DebugType.message;
+                                logScrollPosition.y = Mathf.Infinity;
+                            }
 
-            GUI.color = DebugColors[1];
-            if (GUILayout.Button("Warning"))
-            {
-                display = NDebug.DebugType.warning;
-                logScrollPosition.y = Mathf.Infinity;
-            }
+                            GUI.color = DebugColors[1];
+                            if (GUILayout.Button("Warning", GUILayout.Width(75)))
+                            {
+                                display = NDebug.DebugType.warning;
+                                logScrollPosition.y = Mathf.Infinity;
+                            }
 
-            GUI.color = DebugColors[2];
-            if (GUILayout.Button("Error"))
-            {
-                display = NDebug.DebugType.error;
-                logScrollPosition.y = Mathf.Infinity;
-            }
+                            GUI.color = DebugColors[2];
+                            if (GUILayout.Button("Error", GUILayout.Width(75)))
+                            {
+                                display = NDebug.DebugType.error;
+                                logScrollPosition.y = Mathf.Infinity;
+                            }
 
-            GUI.color = DebugColors[3];
-            if (GUILayout.Button("Critical"))
-            {
-                display = NDebug.DebugType.critical;
-                logScrollPosition.y = Mathf.Infinity;
-            }
-            GUI.color = Color.white;
+                            GUI.color = DebugColors[3];
+                            if (GUILayout.Button("Critical", GUILayout.Width(75)))
+                            {
+                                display = NDebug.DebugType.critical;
+                                logScrollPosition.y = Mathf.Infinity;
+                            }
+                            GUI.color = Color.white;
+                        GUILayout.EndHorizontal();
 
-            switchOnWarning = GUILayout.Toggle(switchOnWarning, "Switch on Warning");
-            switchOnError = GUILayout.Toggle(switchOnError, "Switch on Error");
-            switchOnCritical = GUILayout.Toggle(switchOnCritical, "Switch on Critical");
-            GUILayout.EndVertical();
-            #endregion
+                        GUILayout.BeginHorizontal();
+                            switchOnWarning = GUILayout.Toggle(switchOnWarning, "Warning Switch");
+                            switchOnError = GUILayout.Toggle(switchOnError, "Error Switch");
+                            switchOnCritical = GUILayout.Toggle(switchOnCritical, "Critical Switch");
+                        GUILayout.EndHorizontal();
+                    #endregion
 
-            #region Log View
-            GUILayout.BeginVertical(GUILayout.Width(400));
-            logScrollPosition = GUILayout.BeginScrollView(logScrollPosition);
-            switch (display)
-            {
-                case NDebug.DebugType.message:
-                    GUI.color = DebugColors[0];
-                    foreach (NDebug.Info i in messages)
-                    {
-                        if(GUILayout.Button(i.timestamp.ToString("[0.00]") + i.source + " : " +  i.description, style[0]))
+                    #region Log View
+                            GUILayout.BeginVertical(GUILayout.Width(300));
+                                logScrollPosition = GUILayout.BeginScrollView(logScrollPosition);
+                                switch (display)
+                                {
+                                    case NDebug.DebugType.message:
+                                        GUI.color = DebugColors[0];
+                                        foreach (NDebug.Info i in messages)
+                                        {
+                                            if(GUILayout.Button(i.timestamp.ToString("[0.00] ") + i.source + " : " +  i.description, style[0]))
+                                            {
+                                                PingObject(i.source.gameObject);
+                                            }
+                                        }
+                                        break;
+                                    case NDebug.DebugType.warning:
+                                        GUI.color = DebugColors[2];
+                                        foreach (NDebug.Info i in warnings)
+                                        {
+                                            if (GUILayout.Button(i.timestamp.ToString("[0.00] ") + i.source + " : " + i.description))
+                                            {
+                                                PingObject(i.source.gameObject);
+                                            }
+                                        }
+                                        break;
+                                    case NDebug.DebugType.error:
+                                        GUI.color = DebugColors[3];
+                                        foreach (NDebug.Info i in errors)
+                                        {
+                                            if (GUILayout.Button(i.timestamp.ToString("[0.00] ") + i.source + " : " + i.description))
+                                            {
+                                                PingObject(i.source.gameObject);
+                                            }
+                                        }
+                                        break;
+                                    case NDebug.DebugType.critical:
+                                        GUI.color = DebugColors[3];
+                                        foreach (NDebug.Info i in critical)
+                                        {
+                                            if (GUILayout.Button(i.timestamp.ToString("[0.00] ") + i.source + " : " + i.description))
+                                            {
+                                                PingObject(i.source.gameObject);
+                                            }
+                                        }
+                                        break;
+                                }
+                                GUI.color = Color.white;
+                                GUILayout.EndScrollView();
+                            GUILayout.EndVertical();
+                        GUILayout.EndVertical();
+                    #endregion
+
+                    #region Static Display
+                    GUILayout.BeginVertical(GUILayout.Width(500));
+                        sdiScrollPosition = GUILayout.BeginScrollView(sdiScrollPosition);
+                        foreach (KeyValuePair<string, string> kvp in staticDisplayInformation)
                         {
-                            PingObject(i.source.gameObject);
+                            GUILayout.Label(kvp.Value, style[0]);
                         }
-                    }
-                    break;
-                case NDebug.DebugType.warning:
-                    GUI.color = DebugColors[2];
-                    foreach (NDebug.Info i in warnings)
-                    {
-                        if (GUILayout.Button(i.timestamp.ToString("[0.00]") + i.source + " : " + i.description))
-                        {
-                            PingObject(i.source.gameObject);
-                        }
-                    }
-                    break;
-                case NDebug.DebugType.error:
-                    GUI.color = DebugColors[3];
-                    foreach (NDebug.Info i in errors)
-                    {
-                        if (GUILayout.Button(i.timestamp.ToString("[0.00]") + i.source + " : " + i.description))
-                        {
-                            PingObject(i.source.gameObject);
-                        }
-                    }
-                    break;
-                case NDebug.DebugType.critical:
-                    GUI.color = DebugColors[3];
-                    foreach (NDebug.Info i in critical)
-                    {
-                        if (GUILayout.Button(i.timestamp.ToString("[0.00]") + i.source + " : " + i.description))
-                        {
-                            PingObject(i.source.gameObject);
-                        }
-                    }
-                    break;
-            }
-            GUI.color = Color.white;
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-            #endregion
-
-            #region Static Display
-            GUILayout.BeginVertical(GUILayout.Width(500));
-            sdiScrollPosition = GUILayout.BeginScrollView(sdiScrollPosition);
-            foreach (KeyValuePair<string, string> kvp in staticDisplayInformation)
-            {
-                GUILayout.Label(kvp.Value, style[0]);
-            }
-            GUILayout.EndScrollView();
-            GUILayout.EndVertical();
-            #endregion
-            GUILayout.EndHorizontal();
+                        GUILayout.EndScrollView();
+                    GUILayout.EndVertical();
+                #endregion
+                GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
     }
