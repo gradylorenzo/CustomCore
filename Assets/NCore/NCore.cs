@@ -28,25 +28,19 @@ namespace NCore
 
         public static class GameManager
         {
-            public static SettingsData currentSettings { get; private set; }
-            public enum GameStates
-            {
-                playing = 0,
-                paused = 1
-            }
-            public static GameStates gameState { get; private set; }
-
             public static void Start(int i)
             {
                 LoadSettings();
                 LoadDefaultScene(i);
             }
 
+            public static SettingsData currentSettings { get; private set; }
             private static void LoadSettings()
             {
                 currentSettings = IO.Read();
                 Settings.Apply(currentSettings);
             }
+
             private static void LoadDefaultScene(int i)
             {
                 if(i > 0)
@@ -54,7 +48,6 @@ namespace NCore
                     LoadScene(i);
                 }
             }
-
             public static void LoadScene(int index)
             {
                 SceneManager.LoadScene(index);
@@ -64,6 +57,12 @@ namespace NCore
                 SceneManager.LoadScene(name);
             }
 
+            public enum GameStates
+            {
+                playing = 0,
+                paused = 1
+            }
+            public static GameStates gameState { get; private set; }
             public static void ChangeGameState(GameStates newState)
             {
                 gameState = newState;

@@ -11,6 +11,7 @@ public class NDebugPanel : MonoBehaviour
 
     public List<NDebug.Info> allMessages = new List<NDebug.Info>();
     public Dictionary<string, string> staticDisplayInformation = new Dictionary<string, string>();
+    public string systemInfo;
 
     private bool showDebug = true;
     private bool switchOnWarning = false;
@@ -52,9 +53,6 @@ public class NDebugPanel : MonoBehaviour
     private void Start()
     {
         NDebug.Log(new NDebug.Info(NDebug.DebugType.message, "NDebug is active!", this));
-        NDebug.Log(new NDebug.Info(NDebug.DebugType.warning, "NDebug is active!", this));
-        NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "NDebug is active!", this));
-        NDebug.Log(new NDebug.Info(NDebug.DebugType.critical, "NDebug is active!", this));
     }
 
     private void Update()
@@ -66,11 +64,29 @@ public class NDebugPanel : MonoBehaviour
 
     private void GetSystemSpecs()
     {
+        string cpu()
+        {
+            string edited = SystemInfo.processorType;
+            edited = edited.Replace("Intel", "");
+            edited = edited.Replace("AMD", "");
+            edited = edited.Replace("(TM)", "");
+            edited = edited.Replace("(R)", "");
+            edited = edited.Replace("@ ", "");
+            edited = edited.Replace("CPU ", "");
+
+            return edited;
+        }
+
+        string ram (int r)
+        {
+            return (r / 1000f).ToString("0.# GB");
+        }
+
         NDebug.UpdateSDI("system.os", "OS: " + SystemInfo.operatingSystem);
-        NDebug.UpdateSDI("system.cpu", "CPU: " + SystemInfo.processorType);
-        NDebug.UpdateSDI("system.sram", "System RAM: " + SystemInfo.systemMemorySize);
+        NDebug.UpdateSDI("system.cpu", "CPU:" + cpu());
+        NDebug.UpdateSDI("system.sram", "System RAM: " + ram(SystemInfo.systemMemorySize));
         NDebug.UpdateSDI("system.gpu", "GPU: " + SystemInfo.graphicsDeviceName);
-        NDebug.UpdateSDI("system.gram", "GPU RAM: " + SystemInfo.graphicsMemorySize);
+        NDebug.UpdateSDI("system.gram", "GPU RAM: " + ram(SystemInfo.graphicsMemorySize));
         NDebug.UpdateSDI("system.gapi", "Graphics API: " + SystemInfo.graphicsDeviceType);
         NDebug.UpdateSDI("system.glevel", "Shader Level: " + SystemInfo.graphicsShaderLevel);
         NDebug.UpdateSDI("system.maxtexsize", "Max Texture Size: " + SystemInfo.maxTextureSize);
@@ -167,40 +183,40 @@ public class NDebugPanel : MonoBehaviour
     {
         if (showDebug)
         {
-            GUILayout.BeginArea(new Rect(0, 0, 750, Screen.height), style[1]);
+            GUILayout.BeginArea(new Rect(0, 0, 570, Screen.height), style[1]);
             GUILayout.BeginHorizontal();
             #region View Switches
-            GUILayout.BeginVertical();
+            GUILayout.BeginVertical(GUILayout.Width(310));
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("All", GUILayout.Width(80)))
+            if (GUILayout.Button("All", GUILayout.Width(30)))
             {
                 displayAll = true;
                 logScrollPosition.y = Mathf.Infinity;
             }
             GUI.color = DebugColors[0];
-            if (GUILayout.Button("Message", GUILayout.Width(80)))
+            if (GUILayout.Button("Message", GUILayout.Width(70)))
             {
                 displayAll = false;
                 display = NDebug.DebugType.message;
                 logScrollPosition.y = Mathf.Infinity;
             }
             GUI.color = DebugColors[1];
-            if (GUILayout.Button("Warning", GUILayout.Width(80)))
+            if (GUILayout.Button("Warning", GUILayout.Width(70)))
             {
                 displayAll = false;
                 display = NDebug.DebugType.warning;
                 logScrollPosition.y = Mathf.Infinity;
             }
             GUI.color = DebugColors[2];
-            if (GUILayout.Button("Error", GUILayout.Width(80)))
+            if (GUILayout.Button("Error", GUILayout.Width(70)))
             {
                 displayAll = false;
                 display = NDebug.DebugType.error;
                 logScrollPosition.y = Mathf.Infinity;
             }
             GUI.color = DebugColors[3];
-            if (GUILayout.Button("Critical", GUILayout.Width(80)))
+            if (GUILayout.Button("Critical", GUILayout.Width(70)))
             {
                 displayAll = false;
                 display = NDebug.DebugType.critical;
@@ -217,7 +233,7 @@ public class NDebugPanel : MonoBehaviour
             #endregion
 
             #region Log View
-            GUILayout.BeginVertical(GUILayout.Width(400));
+            GUILayout.BeginVertical(GUILayout.Width(310));
             logScrollPosition = GUILayout.BeginScrollView(logScrollPosition);
             if (!displayAll)
             {
@@ -254,7 +270,7 @@ public class NDebugPanel : MonoBehaviour
             #endregion
 
             #region Static Display
-            GUILayout.BeginVertical(GUILayout.Width(500));
+            GUILayout.BeginVertical(GUILayout.Width(250));
             sdiScrollPosition = GUILayout.BeginScrollView(sdiScrollPosition);
             foreach (KeyValuePair<string, string> kvp in staticDisplayInformation)
             {
