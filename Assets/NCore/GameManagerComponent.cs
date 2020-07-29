@@ -1,10 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using NCore;
+﻿using UnityEngine;
 using NCore.Managers;
-using NCore.Settings;
-using UnityEngine.SceneManagement;
 
 public class GameManagerComponent : MonoBehaviour
 {

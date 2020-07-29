@@ -11,7 +11,7 @@ public class NDebugPanel : MonoBehaviour
     public int panelWidth = 380;
     public List<NDebug.Info> allMessages = new List<NDebug.Info>();
     public Dictionary<string, string> staticDisplayInformation = new Dictionary<string, string>();
-    public string systemInfo;
+    private string systemInfo;
     private string screenSize()
     {
         return Screen.width + " x " + Screen.height + ", " + Screen.fullScreenMode.ToString();
@@ -101,7 +101,7 @@ public class NDebugPanel : MonoBehaviour
         string suppshadows = "SHAD: " + SystemInfo.supportsShadows.ToString() + "\n";
         string suppaccel = "ACCL: " + SystemInfo.supportsAccelerometer.ToString() + "     ";
         string suppgyro = "GYRO: " + SystemInfo.supportsGyroscope.ToString() + "\n";
-        string res = "RES: " + screenSize() + "\n";
+        string res = "RES: ";
 
         systemInfo = os + cpu() + sram + gpu() + gram + gapi + shader + maxtex + suppshadows + suppaccel + suppgyro + res;
     }
@@ -213,11 +213,9 @@ public class NDebugPanel : MonoBehaviour
             GUILayout.BeginVertical();
             #region Static Display
 
-            //System info and SDI
             GUILayout.BeginHorizontal();
-            GUILayout.Label(systemInfo, GUILayout.Width(210));
+            GUILayout.Label(systemInfo + screenSize(), GUILayout.Width(210));
 
-            //SDI
             GUILayout.BeginVertical();
             foreach(KeyValuePair<string, string> kvp in staticDisplayInformation)
             {
@@ -227,7 +225,6 @@ public class NDebugPanel : MonoBehaviour
             GUILayout.EndVertical();
 
             GUILayout.EndHorizontal();
-            //System info and SDI
             #endregion
 
             #region Log View
@@ -239,9 +236,16 @@ public class NDebugPanel : MonoBehaviour
                 foreach (NDebug.Info i in allMessages)
                 {
                     GUI.color = DebugColors[(int)i.type];
-                    if (GUILayout.Button(i.timestamp.ToString("[0.00] ") + i.source + " : " + i.description, style[0]) && i.source != null)
+                    if (i.source != null)
                     {
-                        PingObject(i.source.gameObject);
+                        if (GUILayout.Button(i.timestamp.ToString("[0.00] <") + i.source + "> " + i.description, style[0]))
+                        {
+                            PingObject(i.source.gameObject);
+                        }
+                    }
+                    else
+                    {
+                        GUILayout.Label(i.timestamp.ToString("[0.00] ") + i.description, style[0]);
                     }
                     GUILayout.Space(5);
                     GUI.color = Color.white;
@@ -254,9 +258,16 @@ public class NDebugPanel : MonoBehaviour
                 {
                     if (i.type == display)
                     {
-                        if (GUILayout.Button(i.timestamp.ToString("[0.00] ") + i.source + " : " + i.description, style[0]) && i.source != null)
+                        if (i.source != null)
                         {
-                            PingObject(i.source.gameObject);
+                            if (GUILayout.Button(i.timestamp.ToString("[0.00] <") + i.source + "> " + i.description, style[0]))
+                            {
+                                PingObject(i.source.gameObject);
+                            }
+                        }
+                        else
+                        {
+                            GUILayout.Label(i.timestamp.ToString("[0.00] ") + i.description, style[0]);
                         }
                         GUILayout.Space(5);
                     }
@@ -314,7 +325,6 @@ public class NDebugPanel : MonoBehaviour
             #endregion
 
             GUILayout.EndVertical();
-            
             GUILayout.EndArea();
         }
     }
