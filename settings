@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SettingsData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <display>
+    <width>1600</width>
+    <height>900</height>
+    <vSync>0</vSync>
+    <fullscreenMode>ExclusiveFullScreen</fullscreenMode>
+  </display>
+  <audio>
+    <master>0.25</master>
+    <effects>1</effects>
+    <music>1</music>
+    <dialogPrimary>1</dialogPrimary>
+    <dialogSecondary>1</dialogSecondary>
+  </audio>
+  <graphics>
+    <enablePostProcessing>false</enablePostProcessing>
+    <enableBloom>false</enableBloom>
+    <enableMotionBlur>false</enableMotionBlur>
+    <enableAO>false</enableAO>
+    <enableChromaticAberation>false</enableChromaticAberation>
+  </graphics>
+</SettingsData>

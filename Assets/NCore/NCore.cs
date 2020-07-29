@@ -18,22 +18,52 @@ namespace NCore
 
         //Some identifier where the user can send a screenshot
         //should a critical NDebug.Log be raised
-        public const string DeveloperID = "Discord: Nyxton#6759";
+        public const string DeveloperID = "Discord @Nyxton#6759";
     }
 
     namespace Managers
     {
+        using NCore.Settings;
+        using UnityEngine.SceneManagement;
+
         public static class GameManager
         {
+            public static SettingsData currentSettings { get; private set; }
             public enum GameStates
             {
                 playing = 0,
                 paused = 1
             }
-
             public static GameStates gameState { get; private set; }
 
-            //Changes the state of the game to the state provided.
+            public static void Start(int i)
+            {
+                LoadSettings();
+                LoadDefaultScene(i);
+            }
+
+            private static void LoadSettings()
+            {
+                currentSettings = IO.Read();
+                Settings.Apply(currentSettings);
+            }
+            private static void LoadDefaultScene(int i)
+            {
+                if(i > 0)
+                {
+                    LoadScene(i);
+                }
+            }
+
+            public static void LoadScene(int index)
+            {
+                SceneManager.LoadScene(index);
+            }
+            public static void LoadScene(string name)
+            {
+                SceneManager.LoadScene(name);
+            }
+
             public static void ChangeGameState(GameStates newState)
             {
                 gameState = newState;
@@ -92,6 +122,15 @@ namespace NCore
                     enableChromaticAberation = c;
                 }
             }
+
+            public static void Apply(SettingsData data)
+            {
+                Display.SetResolution(data.display.width, data.display.height, data.display.fullscreenMode, data.display.vSync);
+                Audio.SetVolume(data.audio.master, data.audio.effects, data.audio.music, data.audio.dialogPrimary, data.audio.dialogSecondary);
+                Graphics.SetGraphics(data.graphics.enablePostProcessing, data.graphics.enableBloom, data.graphics.enableMotionBlur, data.graphics.enableAO, data.graphics.enableChromaticAberation);
+                NDebug.Log(new NDebug.Info(NDebug.DebugType.message, "SUC_SETTINGS_APPLIED"));
+                EventManager.UpdateSettings();
+            }
         }
 
         public class SettingsData
@@ -124,11 +163,11 @@ namespace NCore
             public AudioSettings audio;
             public GraphicsSettings graphics;
 
-            public void Apply()
+            public SettingsData()
             {
-                Settings.Display.SetResolution(display.width, display.height, display.fullscreenMode, display.vSync);
-                Settings.Audio.SetVolume(audio.master, audio.effects, audio.music, audio.dialogPrimary, audio.dialogSecondary);
-                Settings.Graphics.SetGraphics(graphics.enablePostProcessing, graphics.enableBloom, graphics.enableMotionBlur, graphics.enableAO, graphics.enableChromaticAberation);
+                display = new DisplaySettings();
+                audio = new AudioSettings();
+                graphics = new GraphicsSettings();
             }
         }
 
@@ -138,9 +177,15 @@ namespace NCore
             {
                 XmlSerializer xs = new XmlSerializer(typeof(SettingsData));
                 TextWriter tw = new StreamWriter(Config.SettingsFileName);
-
-                xs.Serialize(tw, settings);
-                tw.Close();
+                try
+                {
+                    xs.Serialize(tw, settings);
+                    tw.Close();
+                }
+                catch(ApplicationException e)
+                {
+                    NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_IO_WRITE_SETTINGS_FAILED: " + e.InnerException));
+                }
             }
 
             public static bool SettingsExists()
@@ -151,26 +196,35 @@ namespace NCore
             public static SettingsData Read()
             {
                 SettingsData newSettings = new SettingsData();
-                SettingsData tmp = new SettingsData();
+                if (File.Exists(Config.SettingsFileName))
+                {
+                    SettingsData tmp = new SettingsData();
 
-                XmlSerializer xs = new XmlSerializer(typeof(Settings));
-                TextReader tr = new StreamReader(Config.SettingsFileName);
+                    XmlSerializer xs = new XmlSerializer(typeof(SettingsData));
+                    TextReader tr = new StreamReader(Config.SettingsFileName);
 
-                try
-                {
-                    tmp = (SettingsData)xs.Deserialize(tr);
+                    try
+                    {
+                        tmp = (SettingsData)xs.Deserialize(tr);
+                    }
+                    catch (ApplicationException e)
+                    {
+                        NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_IO_CANNOT_DESERIALIZE_SETTINGS"));
+                        Debug.LogError(e.InnerException);
+                        tr.Close();
+                    }
+                    finally
+                    {
+                        NDebug.Log(new NDebug.Info(NDebug.DebugType.message, "SUC_IO_DESERIALIZED_SETTINGS"));
+                        tr.Close();
+                        newSettings = tmp;
+                    }
                 }
-                catch (ApplicationException e)
+                else
                 {
-                    NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, "ERR_IO_CANNOT_DESERIALIZE_SETTINGS"));
-                    Debug.LogError(e.InnerException);
-                    tr.Close();
-                }
-                finally
-                {
-                    NDebug.Log(NDebug.DebugType.message, new NDebug.Info(Time.time, "SUC_IO_DESERIALIZED_SETTINGS"));
-                    tr.Close();
-                    newSettings = tmp;
+                    NDebug.Log(new NDebug.Info(NDebug.DebugType.warning, "ERR_IO_SETTINGS_NOT_FOUND_WRITING_NEW"));
+                    newSettings = new SettingsData();
+                    Write(newSettings);
                 }
 
                 return newSettings;
@@ -203,13 +257,13 @@ namespace NCore
                         }
                         catch (ApplicationException e)
                         {
-                            NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, "ERR_IO_FAILED_TO_DESERIALIZE: " + filename));
+                            NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_IO_FAILED_TO_DESERIALIZE: " + filename));
                             Debug.LogError(e.InnerException);
                             tr.Close();
                         }
                         finally
                         {
-                            NDebug.Log(NDebug.DebugType.message, new NDebug.Info(Time.time, "SUC_IO_DESERIALIZED: " + filename));
+                            NDebug.Log( new NDebug.Info(NDebug.DebugType.message, "SUC_IO_DESERIALIZED: " + filename));
                             tr.Close();
                             newSaveData = tmp;
                             playerName = filename;
@@ -219,7 +273,7 @@ namespace NCore
                     }
                     else
                     {
-                        NDebug.Log(NDebug.DebugType.warning, new NDebug.Info(Time.time, "ERR_IO_NO_FILE_EXISTS: " + filename));
+                        NDebug.Log(new NDebug.Info(NDebug.DebugType.warning, "ERR_IO_NO_FILE_EXISTS: " + filename));
                         throw new Exception("ERR_NO_FILE_EXISTS");
                     }
                 }
@@ -239,7 +293,7 @@ namespace NCore
                     }
                     else
                     {
-                        NDebug.Log(NDebug.DebugType.warning, new NDebug.Info(Time.time, "ERR_FILE_ALREADY_EXISTS: " + filename));
+                        NDebug.Log(new NDebug.Info(NDebug.DebugType.warning, "ERR_FILE_ALREADY_EXISTS: " + filename));
                         throw new Exception("ERR_FILE_ALREADY_EXISTS");
                     }
                 }
@@ -259,13 +313,13 @@ namespace NCore
                         }
                         else
                         {
-                            NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, "ERR_IO_NO_SAVE_DATA_TO_WRITE"));
+                            NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_IO_NO_SAVE_DATA_TO_WRITE"));
                             throw new Exception("ERR_IO_NO_SAVE_DATA_TO_WRITE");
                         }
                     }
                     else
                     {
-                        NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, "ERR_NO_FILE_EXISTS: " + playerName));
+                        NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_NO_FILE_EXISTS: " + playerName));
                         throw new Exception("ERR_NO_FILE_EXISTS");
                     }
                 }
@@ -277,7 +331,7 @@ namespace NCore
                     saveData = null;
                     playerName = null;
 
-                    NDebug.Log(NDebug.DebugType.message, new NDebug.Info(Time.time, "SUC_IO_CLEARED_CACHE"));
+                    NDebug.Log(new NDebug.Info(NDebug.DebugType.message, "SUC_IO_CLEARED_CACHE"));
                 }
 
                 //Get a list of filenames that can successfully be deserialized.
@@ -300,7 +354,7 @@ namespace NCore
                         }
                         catch(ApplicationException e)
                         {
-                            NDebug.Log(NDebug.DebugType.error, new NDebug.Info(Time.time, e.InnerException.ToString()));
+                            NDebug.Log(new NDebug.Info(NDebug.DebugType.error, e.InnerException.ToString()));
                             Debug.LogError(e.InnerException);
                         }
                         finally

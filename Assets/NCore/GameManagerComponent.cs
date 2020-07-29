@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using NCore;
 using NCore.Managers;
+using NCore.Settings;
 using UnityEngine.SceneManagement;
 
 public class GameManagerComponent : MonoBehaviour
 {
-    public int defaultScene;
+    [Header("Load the scene at index by default if > 0")]
+    public int defaultScene = 0;
 
     private void Awake()
     {
@@ -17,8 +19,7 @@ public class GameManagerComponent : MonoBehaviour
 
     private void Start()
     {
-        if(defaultScene > -1)
-        SceneManager.LoadScene(defaultScene);
+        GameManager.Start(defaultScene);
     }
 
     //Default event subscribers to prevent null reference exceptions.
