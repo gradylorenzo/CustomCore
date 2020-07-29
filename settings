@@ -3,7 +3,7 @@
   <display>
     <width>1600</width>
     <height>900</height>
-    <vSync>0</vSync>
+    <vSync>1</vSync>
     <fullscreenMode>ExclusiveFullScreen</fullscreenMode>
   </display>
   <audio>

@@ -166,6 +166,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enableAutoDebug: 1
   background: {fileID: 2800000, guid: 91f60cd04b6a8ee408d90b6b99ea3188, type: 3}
+  panelWidth: 380
+  systemInfo: 
 --- !u!1 &1891890873
 GameObject:
   m_ObjectHideFlags: 0
