@@ -17,7 +17,7 @@ public class NDebugPanel : MonoBehaviour
         return Screen.width + " x " + Screen.height + ", " + Screen.fullScreenMode.ToString();
     }
 
-    private bool showDebug = true;
+    private bool showDebug = false;
     private bool switchOnWarning = false;
     private bool switchOnError = false;
     private bool switchOnCritical = true;
@@ -157,20 +157,23 @@ public class NDebugPanel : MonoBehaviour
             if(switchOnWarning && info.type == NDebug.DebugType.warning)
             {
                 display = NDebug.DebugType.warning;
+                showDebug = true;
             }
 
             if(switchOnError && info.type == NDebug.DebugType.error)
             {
                 display = NDebug.DebugType.error;
+                showDebug = true;
             }
 
             if(switchOnCritical && info.type == NDebug.DebugType.critical)
             {
                 display = NDebug.DebugType.critical;
+                showDebug = true;
             }
 
             displayAll = false;
-            showDebug = true;
+            
         }
         logScrollPosition.y = Mathf.Infinity;
     }

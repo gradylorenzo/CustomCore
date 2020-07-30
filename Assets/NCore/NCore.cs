@@ -134,6 +134,10 @@ namespace NCore
 
         public class SettingsData
         {
+            public class ApplicationSettings
+            {
+                public bool autosave = true;
+            }
             public class DisplaySettings
             {
                 public int width = 1600;
@@ -143,7 +147,7 @@ namespace NCore
             }
             public class AudioSettings
             {
-                public float master = 0.25f;
+                public float master = 0.0f;
                 public float effects = 1.0f;
                 public float music = 1.0f;
                 public float dialogPrimary = 1.0f;
@@ -158,12 +162,14 @@ namespace NCore
                 public bool enableChromaticAberation = false;
             }
 
+            public ApplicationSettings application;
             public DisplaySettings display;
             public AudioSettings audio;
             public GraphicsSettings graphics;
 
             public SettingsData()
             {
+                application = new ApplicationSettings();
                 display = new DisplaySettings();
                 audio = new AudioSettings();
                 graphics = new GraphicsSettings();

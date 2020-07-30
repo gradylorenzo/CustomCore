@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <SettingsData xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <application>
+    <autosave>true</autosave>
+  </application>
   <display>
     <width>1600</width>
     <height>900</height>
-    <vSync>1</vSync>
+    <vSync>0</vSync>
     <fullscreenMode>ExclusiveFullScreen</fullscreenMode>
   </display>
   <audio>
-    <master>0.25</master>
+    <master>0</master>
     <effects>1</effects>
     <music>1</music>
     <dialogPrimary>1</dialogPrimary>
