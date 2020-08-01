@@ -99,7 +99,33 @@ namespace NCore
     {
         public static class Settings
         {
-            public static SettingsData currentSettings = new SettingsData();
+            public struct Resolution
+            {
+                public int width;
+                public int height;
+
+                public Resolution(int w, int h)
+                {
+                    width = w;
+                    height = h;
+                }
+            }
+
+            public static Resolution[] supportedResolutions = new Resolution[]
+            {
+                new Resolution(1280, 720),
+                new Resolution(1366, 768),
+                new Resolution(1600, 900),
+                new Resolution(1920, 1080),
+                new Resolution(2560, 1440)
+            };
+
+            public static SettingsData.ApplicationSettings defaultApplication = new SettingsData.ApplicationSettings(true);
+            public static SettingsData.DisplaySettings defaultDisplay =         new SettingsData.DisplaySettings(new Resolution(1600, 900), true, FullScreenMode.Windowed);
+            public static SettingsData.GraphicsSettings defaultGraphics =       new SettingsData.GraphicsSettings(true, true, true, true, true);
+            public static SettingsData.AudioSettings defaultAudio =             new SettingsData.AudioSettings(0.1f, 1.0f, 1.0f, 1.0f, 1.0f);
+            public static SettingsData currentSettings =                        new SettingsData(defaultApplication, defaultDisplay, defaultGraphics, defaultAudio);
+
             public static void ApplySettings(SettingsData newSettings)
             {
                 currentSettings = newSettings;
@@ -116,6 +142,121 @@ namespace NCore
                 currentSettings.Apply(currentSettings);
             }
 
+            public struct SettingsData
+            {
+                public struct ApplicationSettings
+                {
+                    public bool autosave;
+
+                    public void Apply()
+                    {
+                        NDebug.Log(new NDebug.Info("Application Settings Applied."));
+                    }
+
+                    public ApplicationSettings(bool a)
+                    {
+                        autosave = a;
+                    }
+                }
+                public struct DisplaySettings
+                {
+                    public Resolution resolution;
+                    public bool vSync;
+                    public FullScreenMode fullscreenMode;
+
+                    public void Apply()
+                    {
+                        int vSyncInt(bool v)
+                        {
+                            if (v)
+                            {
+                                return 1;
+                            }
+                            else
+                            {
+                                return 0;
+                            }
+                        }
+                        Screen.SetResolution(resolution.width, resolution.height, fullscreenMode, vSyncInt(vSync));
+                        NDebug.Log(new NDebug.Info("Display Settings Applied."));
+                    }
+
+                    public DisplaySettings(Resolution r, bool v, FullScreenMode f)
+                    {
+                        resolution = r;
+                        vSync = v;
+                        fullscreenMode = f;
+                    }
+                }
+                public struct GraphicsSettings
+                {
+                    public bool enablePostProcessing;
+                    public bool enableBloom;
+                    public bool enableMotionBlur;
+                    public bool enableAO;
+                    public bool enableChromaticAberation;
+
+                    public void Apply()
+                    {
+                        NDebug.Log(new NDebug.Info("Graphics Settings Applied."));
+                    }
+
+                    public GraphicsSettings(bool p, bool b, bool m, bool a, bool c)
+                    {
+                        enablePostProcessing = p;
+                        enableBloom = b;
+                        enableMotionBlur = m;
+                        enableAO = a;
+                        enableChromaticAberation = c;
+                    }
+                }
+                public struct AudioSettings
+                {
+                    public float master;
+                    public float effects;
+                    public float music;
+                    public float primaryDialog;
+                    public float secondaryDialog;
+
+                    public void Apply()
+                    {
+                        NDebug.Log(new NDebug.Info("Audio Settings Applied."));
+                    }
+
+                    public AudioSettings(float ma, float e, float mu, float p, float s)
+                    {
+                        master = ma;
+                        effects = e;
+                        music = mu;
+                        primaryDialog = p;
+                        secondaryDialog = s;
+                    }
+                }
+                
+                public ApplicationSettings application;
+                public DisplaySettings display;
+                public GraphicsSettings graphics;
+                public AudioSettings audio;
+
+                public void Apply(SettingsData settings)
+                {
+                    application.Apply();
+                    display.Apply();
+                    audio.Apply();
+                    graphics.Apply();
+
+                    IO.Write(settings);
+                    EventManager.UpdateSettings();
+                }
+
+                public SettingsData(ApplicationSettings app, DisplaySettings dis, GraphicsSettings gra, AudioSettings aud)
+                {
+                    application = app;
+                    display = dis;
+                    graphics = gra;
+                    audio = aud;
+                }
+            }
             public static class IO
             {
                 public static void Write(SettingsData settings)
@@ -181,72 +322,6 @@ namespace NCore
                 }
             }
 
-            public class SettingsData
-            {
-                public class ApplicationSettings
-                {
-                    public bool autosave = true;
-
-                    public void Apply()
-                    {
-                        NDebug.Log(new NDebug.Info("Application Settings Applied."));
-                    }
-                }
-                public class DisplaySettings
-                {
-                    public Resolution resolution;
-                    public int vSync = 0;
-                    public FullScreenMode fullscreenMode = FullScreenMode.Windowed;
-
-                    public void Apply()
-                    {
-                        Screen.SetResolution(resolution.width, resolution.height, fullscreenMode, vSync);
-                        NDebug.Log(new NDebug.Info("Display Settings Applied."));
-                    }
-                }
-                public class GraphicsSettings
-                {
-                    public bool enablePostProcessing = false;
-                    public bool enableBloom = false;
-                    public bool enableMotionBlur = false;
-                    public bool enableAO = false;
-                    public bool enableChromaticAberation = false;
-
-                    public void Apply()
-                    {
-                        NDebug.Log(new NDebug.Info("Graphics Settings Applied."));
-                    }
-                }
-                public class AudioSettings
-                {
-                    public float master = 0.0f;
-                    public float effects = 1.0f;
-                    public float music = 1.0f;
-                    public float primaryDialog = 1.0f;
-                    public float secondaryDialog = 1.0f;
-
-                    public void Apply()
-                    {
-                        NDebug.Log(new NDebug.Info("Audio Settings Applied."));
-                    }
-                }
-                
-                public ApplicationSettings application = new ApplicationSettings();
-                public DisplaySettings display = new DisplaySettings();
-                public GraphicsSettings graphics = new GraphicsSettings();
-                public AudioSettings audio = new AudioSettings();
-
-                public void Apply(SettingsData settings)
-                {
-                    application.Apply();
-                    display.Apply();
-                    audio.Apply();
-                    graphics.Apply();
-
-                    IO.Write(settings);
-                    EventManager.UpdateSettings();
-                }
-            }
         }
     }
 

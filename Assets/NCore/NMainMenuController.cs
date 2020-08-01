@@ -1,9 +1,6 @@
 ﻿using NCore.Settings;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+using System;
 using UnityEngine;
-using UnityEngine.PlayerLoop;
 using UnityEngine.UI;
 
 public class NMainMenuController : MonoBehaviour
@@ -40,12 +37,9 @@ public class NMainMenuController : MonoBehaviour
     public GameObject confirmNewGame;
     public GameObject confirmExit;
 
-    public Resolution[] supportedResolutions;
-
     private void Start()
     {
         UpdateState(MenuState.none);
-        supportedResolutions = Screen.resolutions;
     }
 
     private void UpdateState(MenuState state)
@@ -67,6 +61,7 @@ public class NMainMenuController : MonoBehaviour
             case MenuState.settings:
                 descriptor.text = "> SETTINGS";
                 subdescriptor.text = "";
+                StartSettingsEditor();
                 break;
             case MenuState.credits:
                 descriptor.text = "";
@@ -144,5 +139,55 @@ public class NMainMenuController : MonoBehaviour
                 break;
         }
     }
+
+    public void ApplySettings()
+    {
+        Settings.currentSettings = newSettings;
+    }
     #endregion
+
+    [Serializable]
+    public class SettingsPanelComponents
+    {
+        public Toggle autosaveToggle;
+
+        public Dropdown resolutionDropdown;
+        public Dropdown windowmodeDropdown;
+        public Toggle vSyncToggle;
+
+        public Toggle postprocessingToggle;
+        public Toggle bloomToggle;
+        public Toggle motionblurToggle;
+        public Toggle ambientOcclusionToggle;
+        public Toggle chromaticToggle;
+
+        public Slider masterSlider;
+        public Slider effectsSlider;
+        public Slider musicSlider;
+        public Slider primaryDialogSlider;
+        public Slider secondaryDialogSlider;
+    }
+
+    public SettingsPanelComponents settingsElements;
+    private Settings.SettingsData newSettings;
+    private void StartSettingsEditor()
+    {
+        newSettings = Settings.currentSettings;
+
+        newSettings.display.resolution = Settings.supportedResolutions[settingsElements.resolutionDropdown.value];
+        newSettings.display.fullscreenMode = (FullScreenMode)settingsElements.windowmodeDropdown.value;
+        newSettings.display.vSync = settingsElements.vSyncToggle;
+
+        newSettings.graphics.enablePostProcessing = settingsElements.postprocessingToggle;
+        newSettings.graphics.enableBloom = settingsElements.bloomToggle;
+        newSettings.graphics.enableMotionBlur = settingsElements.motionblurToggle;
+        newSettings.graphics.enableAO = settingsElements.ambientOcclusionToggle;
+        newSettings.graphics.enableChromaticAberation = settingsElements.chromaticToggle;
+
+        newSettings.audio.master = settingsElements.masterSlider.value;
+        newSettings.audio.effects = settingsElements.effectsSlider.value;
+        newSettings.audio.music = settingsElements.musicSlider.value;
+        newSettings.audio.primaryDialog = settingsElements.primaryDialogSlider.value;
+        newSettings.audio.secondaryDialog = settingsElements.secondaryDialogSlider.value;
+    }
 }
