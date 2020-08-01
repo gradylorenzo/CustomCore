@@ -116,12 +116,12 @@ namespace NCore
             public static void ApplySettings(SettingsData newSettings)
             {
                 currentSettings = newSettings;
-                currentSettings.Apply(currentSettings);
+                currentSettings.Apply();
             }
             public static void LoadSettings()
             {
                 currentSettings = IO.Read();
-                currentSettings.Apply(currentSettings);
+                currentSettings.Apply();
             }
             public static void ApplyDefaultSettings()
             {
@@ -131,7 +131,7 @@ namespace NCore
                 currentSettings.graphics = new SettingsData.GraphicsSettings(true, true, true, true, true);
                 currentSettings.audio = new SettingsData.AudioSettings(0.1f, 1.0f, 1.0f, 1.0f, 1.0f);
 
-                currentSettings.Apply(currentSettings);
+                currentSettings.Apply();
             }
 
             public struct SettingsData
@@ -230,14 +230,14 @@ namespace NCore
                 public GraphicsSettings graphics;
                 public AudioSettings audio;
 
-                public void Apply(SettingsData settings)
+                public void Apply()
                 {
                     application.Apply();
                     display.Apply();
                     audio.Apply();
                     graphics.Apply();
 
-                    IO.Write(settings);
+                    IO.Write(this);
                     EventManager.UpdateSettings();
                 }
 

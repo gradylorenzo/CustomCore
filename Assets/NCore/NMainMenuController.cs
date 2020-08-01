@@ -43,11 +43,6 @@ public class NMainMenuController : MonoBehaviour
         UpdateState(MenuState.none);
     }
 
-    private void Update()
-    {
-        SettingsElementsUpdate();
-    }
-
     private void UpdateState(MenuState state)
     {
         switch (state)
@@ -145,11 +140,6 @@ public class NMainMenuController : MonoBehaviour
                 break;
         }
     }
-
-    public void ApplySettings()
-    {
-        Settings.ApplySettings(newSettings);
-    }
     #endregion
 
     [Serializable]
@@ -174,7 +164,6 @@ public class NMainMenuController : MonoBehaviour
         public Slider secondaryDialogSlider;
     }
 
-    private bool enableSettingsEditing = false;
     public SettingsPanelComponents settingsElements;
     private Settings.SettingsData newSettings;
     private Resolution[] supportedResolutions;
@@ -187,35 +176,12 @@ public class NMainMenuController : MonoBehaviour
     };
     private int currentResolutionIndex = 0;
 
-    private void SettingsElementsUpdate()
-    {
-        if (enableSettingsEditing)
-        {
-            newSettings.display.vSync = settingsElements.vSyncToggle;
-
-            newSettings.graphics.enablePostProcessing = settingsElements.postprocessingToggle;
-            newSettings.graphics.enableBloom = settingsElements.bloomToggle;
-            newSettings.graphics.enableMotionBlur = settingsElements.motionblurToggle;
-            newSettings.graphics.enableAO = settingsElements.ambientOcclusionToggle;
-            newSettings.graphics.enableChromaticAberation = settingsElements.chromaticToggle;
-
-            newSettings.audio.master = settingsElements.masterSlider.value;
-            newSettings.audio.effects = settingsElements.effectsSlider.value;
-            newSettings.audio.music = settingsElements.musicSlider.value;
-            newSettings.audio.primaryDialog = settingsElements.primaryDialogSlider.value;
-            newSettings.audio.secondaryDialog = settingsElements.secondaryDialogSlider.value;
-
-            enableSettingsEditing = !currentState.ToString().Contains("setting");
-        }
-    }
-
     private void StartSettingsEditor()
     {
         newSettings = Settings.currentSettings;
         SetElements();
         GetResolutions();
         GetWindowmodes();
-        enableSettingsEditing = true;
     }
 
     private void SetElements()
@@ -290,5 +256,27 @@ public class NMainMenuController : MonoBehaviour
         newSettings.display.fullscreenMode = windowModes[index];
 
         NDebug.Log(new NDebug.Info("Selected fullscreen mode changed to " + newSettings.display.fullscreenMode.ToString()));
+    }
+
+    public void ApplySettings()
+    {
+        newSettings.application.autosave = settingsElements.autosaveToggle.isOn;
+
+        newSettings.display.vSync = settingsElements.vSyncToggle.isOn;
+
+        newSettings.graphics.enablePostProcessing = settingsElements.postprocessingToggle.isOn;
+        newSettings.graphics.enableBloom = settingsElements.bloomToggle.isOn;
+        newSettings.graphics.enableMotionBlur = settingsElements.motionblurToggle.isOn;
+        newSettings.graphics.enableAO = settingsElements.ambientOcclusionToggle.isOn;
+        newSettings.graphics.enableChromaticAberation = settingsElements.chromaticToggle.isOn;
+
+        newSettings.audio.master = settingsElements.masterSlider.value;
+        newSettings.audio.effects = settingsElements.effectsSlider.value;
+        newSettings.audio.music = settingsElements.musicSlider.value;
+        newSettings.audio.primaryDialog = settingsElements.primaryDialogSlider.value;
+        newSettings.audio.secondaryDialog = settingsElements.secondaryDialogSlider.value;
+        Settings.ApplySettings(newSettings);
+
+        NDebug.Log(new NDebug.Info(newSettings.graphics.enablePostProcessing.ToString()));
     }
 }
