@@ -24,7 +24,6 @@ namespace NCore
         //should a critical NDebug.Log be raised
         public const string DeveloperID = "Discord @Nyxton#6759";
     }
-
     /// <summary>
     /// Static class for GameManager, EventManager, etc.
     /// </summary>
@@ -44,7 +43,6 @@ namespace NCore
                 LoadSettings();
                 LoadDefaultScene(i);
             }
-
             private static void LoadSettings()
             {
                 if (Settings.IO.SettingsExists())
@@ -52,7 +50,6 @@ namespace NCore
                     Settings.ApplySettings(Settings.IO.Read());
                 }
             }
-
             private static void LoadDefaultScene(int i)
             {
                 if(i > 0)
@@ -60,7 +57,6 @@ namespace NCore
                     LoadScene(i);
                 }
             }
-
             public static void NoticeReadBeginGame()
             {
                 Settings.ApplyDefaultSettings();
@@ -95,6 +91,8 @@ namespace NCore
         }
     }
 
+    ///<summary>
+    ///Namespace for handling settings file reading, writing, default settings, etc.
     namespace Settings
     {
         public static class Settings

@@ -1,0 +1,23 @@
+{
+    "files.exclude":{
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Library": true,
+        "**/Packages": true,
+        "**/Temp": true,
+        "**/ProjectSettings": true,
+        "**/obj": true,
+        "**/*.meta": true,
+        "**/*.gitignore": true,
+        "**/*.gitattributes": true,
+        "**/*.sln": true,
+        "**/*.csproj": true,
+        "LICENSE": true,
+    },
+    "typescript.format.placeOpenBraceOnNewLineForControlBlocks": true,
+    "typescript.format.placeOpenBraceOnNewLineForFunctions": true,
+    "explorer.confirmDelete": false
+}

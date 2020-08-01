@@ -62,7 +62,6 @@ public class NDebugPanel : MonoBehaviour
     private void Update()
     {
         ClampPanelWidth();
-        ToggleDebug();
         MeasureFPS();
     }
 
@@ -123,20 +122,9 @@ public class NDebugPanel : MonoBehaviour
         panelWidth = Mathf.Clamp(panelWidth, 380, Screen.width);
     }
 
-    private void ToggleDebug()
+    public void ToggleDebug()
     {
-        if (Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.F12))
-        {
-            if (canToggleDebug)
-            {
-                showDebug = !showDebug;
-                canToggleDebug = false;
-            }
-        }
-        else
-        {
-            canToggleDebug = true;
-        }
+        showDebug = !showDebug;
     }
 
     private void MeasureFPS()
