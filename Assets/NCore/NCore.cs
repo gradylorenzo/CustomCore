@@ -110,21 +110,8 @@ namespace NCore
                     height = h;
                 }
             }
-
-            public static Resolution[] supportedResolutions = new Resolution[]
-            {
-                new Resolution(1280, 720),
-                new Resolution(1366, 768),
-                new Resolution(1600, 900),
-                new Resolution(1920, 1080),
-                new Resolution(2560, 1440)
-            };
-
-            public static SettingsData.ApplicationSettings defaultApplication = new SettingsData.ApplicationSettings(true);
-            public static SettingsData.DisplaySettings defaultDisplay =         new SettingsData.DisplaySettings(new Resolution(1600, 900), true, FullScreenMode.Windowed);
-            public static SettingsData.GraphicsSettings defaultGraphics =       new SettingsData.GraphicsSettings(true, true, true, true, true);
-            public static SettingsData.AudioSettings defaultAudio =             new SettingsData.AudioSettings(0.1f, 1.0f, 1.0f, 1.0f, 1.0f);
-            public static SettingsData currentSettings =                        new SettingsData(defaultApplication, defaultDisplay, defaultGraphics, defaultAudio);
+      
+            public static SettingsData currentSettings;
 
             public static void ApplySettings(SettingsData newSettings)
             {
@@ -139,6 +126,11 @@ namespace NCore
             public static void ApplyDefaultSettings()
             {
                 currentSettings = new SettingsData();
+                currentSettings.application = new SettingsData.ApplicationSettings(true);
+                currentSettings.display = new SettingsData.DisplaySettings(new Resolution(1600, 900), true, FullScreenMode.Windowed);
+                currentSettings.graphics = new SettingsData.GraphicsSettings(true, true, true, true, true);
+                currentSettings.audio = new SettingsData.AudioSettings(0.1f, 1.0f, 1.0f, 1.0f, 1.0f);
+
                 currentSettings.Apply(currentSettings);
             }
 

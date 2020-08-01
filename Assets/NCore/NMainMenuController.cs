@@ -1,5 +1,6 @@
 ﻿using NCore.Settings;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -42,6 +43,11 @@ public class NMainMenuController : MonoBehaviour
         UpdateState(MenuState.none);
     }
 
+    private void Update()
+    {
+        SettingsElementsUpdate();
+    }
+
     private void UpdateState(MenuState state)
     {
         switch (state)
@@ -51,7 +57,7 @@ public class NMainMenuController : MonoBehaviour
                 subdescriptor.text = "";
                 break;
             case MenuState.new_game:
-                 descriptor.text = "> NEW GAME";
+                descriptor.text = "> NEW GAME";
                 subdescriptor.text = "";
                 break;
             case MenuState.all_saves:
@@ -142,7 +148,7 @@ public class NMainMenuController : MonoBehaviour
 
     public void ApplySettings()
     {
-        Settings.currentSettings = newSettings;
+        Settings.ApplySettings(newSettings);
     }
     #endregion
 
@@ -168,26 +174,121 @@ public class NMainMenuController : MonoBehaviour
         public Slider secondaryDialogSlider;
     }
 
+    private bool enableSettingsEditing = false;
     public SettingsPanelComponents settingsElements;
     private Settings.SettingsData newSettings;
+    private Resolution[] supportedResolutions;
+    private FullScreenMode[] windowModes = new FullScreenMode[]
+    {
+        FullScreenMode.Windowed,
+        FullScreenMode.MaximizedWindow,
+        FullScreenMode.FullScreenWindow,
+        FullScreenMode.ExclusiveFullScreen
+    };
+    private int currentResolutionIndex = 0;
+
+    private void SettingsElementsUpdate()
+    {
+        if (enableSettingsEditing)
+        {
+            newSettings.display.vSync = settingsElements.vSyncToggle;
+
+            newSettings.graphics.enablePostProcessing = settingsElements.postprocessingToggle;
+            newSettings.graphics.enableBloom = settingsElements.bloomToggle;
+            newSettings.graphics.enableMotionBlur = settingsElements.motionblurToggle;
+            newSettings.graphics.enableAO = settingsElements.ambientOcclusionToggle;
+            newSettings.graphics.enableChromaticAberation = settingsElements.chromaticToggle;
+
+            newSettings.audio.master = settingsElements.masterSlider.value;
+            newSettings.audio.effects = settingsElements.effectsSlider.value;
+            newSettings.audio.music = settingsElements.musicSlider.value;
+            newSettings.audio.primaryDialog = settingsElements.primaryDialogSlider.value;
+            newSettings.audio.secondaryDialog = settingsElements.secondaryDialogSlider.value;
+
+            enableSettingsEditing = !currentState.ToString().Contains("setting");
+        }
+    }
+
     private void StartSettingsEditor()
     {
         newSettings = Settings.currentSettings;
+        SetElements();
+        GetResolutions();
+        GetWindowmodes();
+        enableSettingsEditing = true;
+    }
 
-        newSettings.display.resolution = Settings.supportedResolutions[settingsElements.resolutionDropdown.value];
-        newSettings.display.fullscreenMode = (FullScreenMode)settingsElements.windowmodeDropdown.value;
-        newSettings.display.vSync = settingsElements.vSyncToggle;
+    private void SetElements()
+    {
+        settingsElements.vSyncToggle.isOn = newSettings.display.vSync;
 
-        newSettings.graphics.enablePostProcessing = settingsElements.postprocessingToggle;
-        newSettings.graphics.enableBloom = settingsElements.bloomToggle;
-        newSettings.graphics.enableMotionBlur = settingsElements.motionblurToggle;
-        newSettings.graphics.enableAO = settingsElements.ambientOcclusionToggle;
-        newSettings.graphics.enableChromaticAberation = settingsElements.chromaticToggle;
+        settingsElements.postprocessingToggle.isOn = newSettings.graphics.enablePostProcessing;
+        settingsElements.bloomToggle.isOn = newSettings.graphics.enableBloom;
+        settingsElements.motionblurToggle.isOn = newSettings.graphics.enableMotionBlur;
+        settingsElements.ambientOcclusionToggle.isOn = newSettings.graphics.enableAO;
+        settingsElements.chromaticToggle.isOn = newSettings.graphics.enableChromaticAberation;
 
-        newSettings.audio.master = settingsElements.masterSlider.value;
-        newSettings.audio.effects = settingsElements.effectsSlider.value;
-        newSettings.audio.music = settingsElements.musicSlider.value;
-        newSettings.audio.primaryDialog = settingsElements.primaryDialogSlider.value;
-        newSettings.audio.secondaryDialog = settingsElements.secondaryDialogSlider.value;
+        settingsElements.masterSlider.value = newSettings.audio.master;
+        settingsElements.effectsSlider.value = newSettings.audio.effects;
+        settingsElements.musicSlider.value = newSettings.audio.music;
+        settingsElements.primaryDialogSlider.value = newSettings.audio.primaryDialog;
+        settingsElements.secondaryDialogSlider.value = newSettings.audio.secondaryDialog;
+    }
+
+    private void GetResolutions()
+    {
+        List<string> res = new List<string>();
+        supportedResolutions = Screen.resolutions;
+        for(int i = 0; i < supportedResolutions.Length; i++)
+        {
+            string option = supportedResolutions[i].width + "x" + supportedResolutions[i].height;
+            res.Add(option);
+
+            if(supportedResolutions[i].width == newSettings.display.resolution.width && supportedResolutions[i].height == newSettings.display.resolution.height)
+            {
+                currentResolutionIndex = i;
+            }
+        }
+
+        settingsElements.resolutionDropdown.ClearOptions();
+        settingsElements.resolutionDropdown.AddOptions(res);
+        settingsElements.resolutionDropdown.value = currentResolutionIndex;
+        settingsElements.resolutionDropdown.RefreshShownValue();
+    }
+
+    public void SelectedResolutionChanged(int index)
+    {
+        Resolution newResolution = supportedResolutions[index];
+        newSettings.display.resolution = new Settings.Resolution(newResolution.width, newResolution.height);
+
+        NDebug.Log(new NDebug.Info("Selected resolution changed to " + newSettings.display.resolution.width + " x " + newSettings.display.resolution.height));
+    }
+
+    public void GetWindowmodes()
+    {
+        int currentMode = 0;
+        List<string> modes = new List<string>();
+        settingsElements.windowmodeDropdown.ClearOptions();
+        
+        for(int i = 0; i < windowModes.Length; i++)
+        {
+            modes.Add(windowModes[i].ToString());
+
+            if(windowModes[i] == Screen.fullScreenMode)
+            {
+                currentMode = i;
+            }
+        }
+
+        settingsElements.windowmodeDropdown.AddOptions(modes);
+        settingsElements.windowmodeDropdown.value = currentMode;
+        settingsElements.windowmodeDropdown.RefreshShownValue();
+    }
+
+    public void SelectedWindowModeChanged(int index)
+    {
+        newSettings.display.fullscreenMode = windowModes[index];
+
+        NDebug.Log(new NDebug.Info("Selected fullscreen mode changed to " + newSettings.display.fullscreenMode.ToString()));
     }
 }

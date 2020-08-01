@@ -1466,20 +1466,20 @@ MonoBehaviour:
   confirmNewGame: {fileID: 770693215}
   confirmExit: {fileID: 1723483178}
   settingsElements:
-    autosaveToggle: {fileID: 0}
-    resolutionDropdown: {fileID: 0}
-    windowmodeDropdown: {fileID: 0}
-    vSyncToggle: {fileID: 0}
-    postprocessingToggle: {fileID: 0}
-    bloomToggle: {fileID: 0}
-    motionblurToggle: {fileID: 0}
-    ambientOcclusionToggle: {fileID: 0}
-    chromaticToggle: {fileID: 0}
-    masterSlider: {fileID: 0}
-    effectsSlider: {fileID: 0}
-    musicSlider: {fileID: 0}
-    primaryDialogSlider: {fileID: 0}
-    secondaryDialogSlider: {fileID: 0}
+    autosaveToggle: {fileID: 774336551}
+    resolutionDropdown: {fileID: 1615665606}
+    windowmodeDropdown: {fileID: 906185805}
+    vSyncToggle: {fileID: 246553949}
+    postprocessingToggle: {fileID: 385647811}
+    bloomToggle: {fileID: 1949035577}
+    motionblurToggle: {fileID: 1903619136}
+    ambientOcclusionToggle: {fileID: 232758993}
+    chromaticToggle: {fileID: 1720701814}
+    masterSlider: {fileID: 879804983}
+    effectsSlider: {fileID: 1565387290}
+    musicSlider: {fileID: 1938209611}
+    primaryDialogSlider: {fileID: 1404656314}
+    secondaryDialogSlider: {fileID: 554699679}
 --- !u!4 &232884447
 Transform:
   m_ObjectHideFlags: 0
@@ -1649,7 +1649,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 10
   m_Viewport: {fileID: 346789775}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 1503293802}
@@ -5028,12 +5028,12 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 232884445}
-        m_MethodName: 
-        m_Mode: 1
+      - m_Target: {fileID: 232884446}
+        m_MethodName: SelectedWindowModeChanged
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
           m_IntArgument: 0
           m_FloatArgument: 0
           m_StringArgument: 
@@ -5575,7 +5575,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &950332321
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5598,7 +5598,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 506.74994, y: 0}
-  m_SizeDelta: {x: 609.4, y: 400}
+  m_SizeDelta: {x: 396.26, y: 400}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &950332322
 MonoBehaviour:
@@ -7193,7 +7193,7 @@ MonoBehaviour:
   m_Elasticity: 0.1
   m_Inertia: 1
   m_DecelerationRate: 0.135
-  m_ScrollSensitivity: 1
+  m_ScrollSensitivity: 10
   m_Viewport: {fileID: 1776445738}
   m_HorizontalScrollbar: {fileID: 0}
   m_VerticalScrollbar: {fileID: 2130161956}
@@ -9785,7 +9785,18 @@ MonoBehaviour:
       m_Image: {fileID: 0}
   m_OnValueChanged:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 232884446}
+        m_MethodName: SelectedResolutionChanged
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   m_AlphaFadeSpeed: 0.15
 --- !u!114 &1615665607
 MonoBehaviour:
@@ -11350,7 +11361,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1913698763
 RectTransform:
   m_ObjectHideFlags: 0
@@ -11371,7 +11382,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 506.74997, y: 0}
-  m_SizeDelta: {x: 609.4, y: 400}
+  m_SizeDelta: {x: 396.26, y: 400}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &1913698764
 MonoBehaviour:
@@ -12927,7 +12938,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &2131148807
 RectTransform:
   m_ObjectHideFlags: 0
@@ -12946,7 +12957,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 506.74997, y: 0}
-  m_SizeDelta: {x: 609.4, y: 400}
+  m_SizeDelta: {x: 396.26, y: 400}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &2131148808
 MonoBehaviour:
@@ -13025,7 +13036,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
   m_AnchoredPosition: {x: 506.74997, y: 0}
-  m_SizeDelta: {x: 609.4, y: 400}
+  m_SizeDelta: {x: 396.26, y: 400}
   m_Pivot: {x: 0, y: 0.5}
 --- !u!114 &2138198653
 MonoBehaviour:
