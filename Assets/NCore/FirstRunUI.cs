@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using NCore.Managers;
 
 public class FirstRunUI : MonoBehaviour
 {
@@ -45,29 +46,29 @@ public class FirstRunUI : MonoBehaviour
 
     IEnumerator moveToFirstPanel()
     {
-        yield return new WaitForSeconds(2);
+        yield return new WaitForSeconds(1);
         fWantedPosition = 0;
     }
 
     IEnumerator moveToSecondPanel()
     {
         fWantedPosition = 1000;
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.25f);
         sWantedPosition = 0;
     }
 
     IEnumerator moveToThirdPanel()
     {
         sWantedPosition = 1000;
-        yield return new WaitForSeconds(1);
+        yield return new WaitForSeconds(0.25f);
         tWantedPosition = 0;
     }
 
     IEnumerator finish()
     {
         tWantedPosition = 1000;
-        yield return new WaitForSeconds(1);
-        gmc.SendMessage("NoticeReadBeginGame");
+        yield return new WaitForSeconds(0.25f);
+        GameManager.NoticeReadBeginGame();
     }
 
     private void FixedUpdate()

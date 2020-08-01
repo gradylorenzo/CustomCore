@@ -5,7 +5,7 @@ using NCore.Settings;
 public class GameManagerComponent : MonoBehaviour
 {
     [Header("Load the scene at index by default if > 0")]
-    public int defaultScene = 0;
+    public int defaultScene = 1;
 
     private bool showNotice = false;
 
@@ -17,16 +17,10 @@ public class GameManagerComponent : MonoBehaviour
 
     private void Start()
     {
-        if (IO.SettingsExists())
+        if (Settings.IO.SettingsExists())
         {
             GameManager.Start(defaultScene);
         }
-    }
-
-    public void NoticeReadBeginGame()
-    {
-        GameManager.Start(defaultScene);
-        
     }
 
     //Default event subscribers to prevent null reference exceptions.

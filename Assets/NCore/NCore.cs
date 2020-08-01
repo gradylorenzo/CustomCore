@@ -7,6 +7,10 @@ using NCore.Managers;
 
 namespace NCore
 {
+    /// <summary>
+    /// NCore.Config stores various options for NCore, including what the settings file is called, where save files are stored, and contact
+    /// details that will be displayed should a critical NDebug.Log be called.
+    /// </summary>
     public static class Config
     {
         //Name of the file used to store settings in XML format.
@@ -21,11 +25,18 @@ namespace NCore
         public const string DeveloperID = "Discord @Nyxton#6759";
     }
 
+    /// <summary>
+    /// Static class for GameManager, EventManager, etc.
+    /// </summary>
     namespace Managers
     {
         using NCore.Settings;
         using UnityEngine.SceneManagement;
 
+        /// <summary>
+        /// GameManager will manage things like the state of the game (whether it's paused, playing, etc), loading of scenes,
+        /// storage of the current settings.
+        /// </summary>
         public static class GameManager
         {
             public static void Start(int i)
@@ -34,11 +45,12 @@ namespace NCore
                 LoadDefaultScene(i);
             }
 
-            public static SettingsData currentSettings { get; private set; }
             private static void LoadSettings()
             {
-                currentSettings = IO.Read();
-                Settings.Apply(currentSettings);
+                if (Settings.IO.SettingsExists())
+                {
+                    Settings.ApplySettings(Settings.IO.Read());
+                }
             }
 
             private static void LoadDefaultScene(int i)
@@ -48,6 +60,13 @@ namespace NCore
                     LoadScene(i);
                 }
             }
+
+            public static void NoticeReadBeginGame()
+            {
+                Settings.ApplyDefaultSettings();
+                LoadDefaultScene(1);
+            }
+
             public static void LoadScene(int index)
             {
                 SceneManager.LoadScene(index);
@@ -80,159 +99,153 @@ namespace NCore
     {
         public static class Settings
         {
-            public static class Display
+            public static SettingsData currentSettings = new SettingsData();
+            public static void ApplySettings(SettingsData newSettings)
             {
-                public static void SetResolution(int w, int h, FullScreenMode m, int v)
+                currentSettings = newSettings;
+                currentSettings.Apply(currentSettings);
+            }
+            public static void LoadSettings()
+            {
+                currentSettings = IO.Read();
+                currentSettings.Apply(currentSettings);
+            }
+            public static void ApplyDefaultSettings()
+            {
+                currentSettings = new SettingsData();
+                currentSettings.Apply(currentSettings);
+            }
+
+            public static class IO
+            {
+                public static void Write(SettingsData settings)
                 {
-                    Screen.SetResolution(w, h, m, v);
-                }
-            }
-            public static class Audio
-            {
-                public static float masterVolume = 0.25f;
-                public static float effectsVolume = 1.0f;
-                public static float musicVolume = 1.0f;
-                public static float primaryDialogVolume = 1.0f;
-                public static float secondaryDialogVolume = 1.0f;
-
-                public static void SetVolume(float ma, float fx, float mu, float pr, float se)
-                {
-                    masterVolume = ma;
-                    effectsVolume = fx;
-                    musicVolume = mu;
-                    primaryDialogVolume = pr;
-                    secondaryDialogVolume = se;
-                }
-            }
-            public static class Graphics
-            {
-                public static bool enablePostProcessing;
-                public static bool enableBloom;
-                public static bool enableMotionBlur;
-                public static bool enableAO;
-                public static bool enableChromaticAberation;
-
-                public static void SetGraphics(bool p, bool b, bool m, bool a, bool c)
-                {
-                    enablePostProcessing = p;
-                    enableBloom = b;
-                    enableMotionBlur = m;
-                    enableAO = a;
-                    enableChromaticAberation = c;
-                }
-            }
-
-            public static void Apply(SettingsData data)
-            {
-                Display.SetResolution(data.display.width, data.display.height, data.display.fullscreenMode, data.display.vSync);
-                Audio.SetVolume(data.audio.master, data.audio.effects, data.audio.music, data.audio.dialogPrimary, data.audio.dialogSecondary);
-                Graphics.SetGraphics(data.graphics.enablePostProcessing, data.graphics.enableBloom, data.graphics.enableMotionBlur, data.graphics.enableAO, data.graphics.enableChromaticAberation);
-                NDebug.Log(new NDebug.Info(NDebug.DebugType.message, "SUC_SETTINGS_APPLIED"));
-                EventManager.UpdateSettings();
-            }
-        }
-
-        public class SettingsData
-        {
-            public class ApplicationSettings
-            {
-                public bool autosave = true;
-            }
-            public class DisplaySettings
-            {
-                public int width = 1600;
-                public int height = 900;
-                public int vSync = 0;
-                public FullScreenMode fullscreenMode = FullScreenMode.ExclusiveFullScreen;
-            }
-            public class AudioSettings
-            {
-                public float master = 0.0f;
-                public float effects = 1.0f;
-                public float music = 1.0f;
-                public float dialogPrimary = 1.0f;
-                public float dialogSecondary = 1.0f;
-            }
-            public class GraphicsSettings
-            {
-                public bool enablePostProcessing = false;
-                public bool enableBloom = false;
-                public bool enableMotionBlur = false;
-                public bool enableAO = false;
-                public bool enableChromaticAberation = false;
-            }
-
-            public ApplicationSettings application;
-            public DisplaySettings display;
-            public AudioSettings audio;
-            public GraphicsSettings graphics;
-
-            public SettingsData()
-            {
-                application = new ApplicationSettings();
-                display = new DisplaySettings();
-                audio = new AudioSettings();
-                graphics = new GraphicsSettings();
-            }
-        }
-
-        public static class IO
-        {
-            public static void Write(SettingsData settings)
-            {
-                XmlSerializer xs = new XmlSerializer(typeof(SettingsData));
-                TextWriter tw = new StreamWriter(Config.SettingsFileName);
-                try
-                {
-                    xs.Serialize(tw, settings);
-                    tw.Close();
-                }
-                catch(ApplicationException e)
-                {
-                    NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_IO_WRITE_SETTINGS_FAILED: " + e.InnerException));
-                }
-            }
-
-            public static bool SettingsExists()
-            {
-                return File.Exists(Config.SettingsFileName);
-            }
-
-            public static SettingsData Read()
-            {
-                SettingsData newSettings = new SettingsData();
-                if (File.Exists(Config.SettingsFileName))
-                {
-                    SettingsData tmp = new SettingsData();
-
                     XmlSerializer xs = new XmlSerializer(typeof(SettingsData));
-                    TextReader tr = new StreamReader(Config.SettingsFileName);
-
+                    TextWriter tw = new StreamWriter(Config.SettingsFileName);
+                    NDebug.Log(new NDebug.Info("ATT_IO_WRITE_SETTINGS"));
                     try
                     {
-                        tmp = (SettingsData)xs.Deserialize(tr);
+                        xs.Serialize(tw, settings);
+                        tw.Close();
                     }
                     catch (ApplicationException e)
                     {
-                        NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_IO_CANNOT_DESERIALIZE_SETTINGS"));
-                        Debug.LogError(e.InnerException);
-                        tr.Close();
+                        NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_IO_WRITE_SETTINGS: " + e.InnerException));
                     }
                     finally
                     {
-                        NDebug.Log(new NDebug.Info(NDebug.DebugType.message, "SUC_IO_DESERIALIZED_SETTINGS"));
-                        tr.Close();
-                        newSettings = tmp;
+                        NDebug.Log(new NDebug.Info("SUC_IO_WRITE_SETTINGS"));
                     }
                 }
-                else
+
+                public static bool SettingsExists()
                 {
-                    NDebug.Log(new NDebug.Info(NDebug.DebugType.warning, "ERR_IO_SETTINGS_NOT_FOUND_WRITING_NEW"));
-                    newSettings = new SettingsData();
-                    Write(newSettings);
+                    return File.Exists(Config.SettingsFileName);
                 }
 
-                return newSettings;
+                public static SettingsData Read()
+                {
+                    SettingsData newSettings = new SettingsData();
+                    if (File.Exists(Config.SettingsFileName))
+                    {
+                        SettingsData tmp = new SettingsData();
+
+                        XmlSerializer xs = new XmlSerializer(typeof(SettingsData));
+                        TextReader tr = new StreamReader(Config.SettingsFileName);
+
+                        try
+                        {
+                            tmp = (SettingsData)xs.Deserialize(tr);
+                        }
+                        catch (ApplicationException e)
+                        {
+                            NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_IO_CANNOT_DESERIALIZE_SETTINGS"));
+                            Debug.LogError(e.InnerException);
+                            tr.Close();
+                        }
+                        finally
+                        {
+                            NDebug.Log(new NDebug.Info(NDebug.DebugType.message, "SUC_IO_DESERIALIZED_SETTINGS"));
+                            tr.Close();
+                            newSettings = tmp;
+                        }
+                    }
+                    else
+                    {
+                        NDebug.Log(new NDebug.Info(NDebug.DebugType.warning, "ERR_IO_SETTINGS_NOT_FOUND_WRITING_NEW"));
+                        newSettings = new SettingsData();
+                        Write(newSettings);
+                    }
+
+                    return newSettings;
+                }
+            }
+
+            public class SettingsData
+            {
+                public class ApplicationSettings
+                {
+                    public bool autosave = true;
+
+                    public void Apply()
+                    {
+                        NDebug.Log(new NDebug.Info("Application Settings Applied."));
+                    }
+                }
+                public class DisplaySettings
+                {
+                    public Resolution resolution;
+                    public int vSync = 0;
+                    public FullScreenMode fullscreenMode = FullScreenMode.Windowed;
+
+                    public void Apply()
+                    {
+                        Screen.SetResolution(resolution.width, resolution.height, fullscreenMode, vSync);
+                        NDebug.Log(new NDebug.Info("Display Settings Applied."));
+                    }
+                }
+                public class GraphicsSettings
+                {
+                    public bool enablePostProcessing = false;
+                    public bool enableBloom = false;
+                    public bool enableMotionBlur = false;
+                    public bool enableAO = false;
+                    public bool enableChromaticAberation = false;
+
+                    public void Apply()
+                    {
+                        NDebug.Log(new NDebug.Info("Graphics Settings Applied."));
+                    }
+                }
+                public class AudioSettings
+                {
+                    public float master = 0.0f;
+                    public float effects = 1.0f;
+                    public float music = 1.0f;
+                    public float primaryDialog = 1.0f;
+                    public float secondaryDialog = 1.0f;
+
+                    public void Apply()
+                    {
+                        NDebug.Log(new NDebug.Info("Audio Settings Applied."));
+                    }
+                }
+                
+                public ApplicationSettings application = new ApplicationSettings();
+                public DisplaySettings display = new DisplaySettings();
+                public GraphicsSettings graphics = new GraphicsSettings();
+                public AudioSettings audio = new AudioSettings();
+
+                public void Apply(SettingsData settings)
+                {
+                    application.Apply();
+                    display.Apply();
+                    audio.Apply();
+                    graphics.Apply();
+
+                    IO.Write(settings);
+                    EventManager.UpdateSettings();
+                }
             }
         }
     }

@@ -7,14 +7,14 @@
     <width>1600</width>
     <height>900</height>
     <vSync>0</vSync>
-    <fullscreenMode>ExclusiveFullScreen</fullscreenMode>
+    <fullscreenMode>Windowed</fullscreenMode>
   </display>
   <audio>
     <master>0</master>
     <effects>1</effects>
     <music>1</music>
-    <dialogPrimary>1</dialogPrimary>
-    <dialogSecondary>1</dialogSecondary>
+    <primaryDialog>1</primaryDialog>
+    <secondaryDialog>1</secondaryDialog>
   </audio>
   <graphics>
     <enablePostProcessing>false</enablePostProcessing>

@@ -37,21 +37,21 @@ public class NVolumeController : MonoBehaviour
 
     public void UpdateSettings()
     {
-        masterVolume = Settings.Audio.masterVolume;
+        masterVolume = Settings.currentSettings.audio.master;
 
         switch (audioType)
         {
             case AudioType.effect:
-                settingsVolume = Settings.Audio.effectsVolume;
+                settingsVolume = Settings.currentSettings.audio.effects;
                 break;
             case AudioType.music:
-                settingsVolume = Settings.Audio.musicVolume;
+                settingsVolume = Settings.currentSettings.audio.music;
                 break;
             case AudioType.primaryDialog:
-                settingsVolume = Settings.Audio.primaryDialogVolume;
+                settingsVolume = Settings.currentSettings.audio.primaryDialog;
                 break;
             case AudioType.secondaryDialog:
-                settingsVolume = Settings.Audio.secondaryDialogVolume;
+                settingsVolume = Settings.currentSettings.audio.secondaryDialog;
                 break;
         }
 
