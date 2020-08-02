@@ -38,6 +38,12 @@ namespace NCore
         /// </summary>
         public static class GameManager
         {
+            public static void Awake()
+            {
+                EventManager.UpdateSettings += UpdateSettings;
+                EventManager.SaveFileLoaded += SaveFileLoaded;
+            }
+
             public static void Start(int i)
             {
                 LoadSettings();
@@ -82,12 +88,24 @@ namespace NCore
             {
                 gameState = newState;
             }
+
+            //Event Handlers
+            public static void UpdateSettings()
+            {
+
+            }
+
+            public static void SaveFileLoaded ()
+            {
+
+            }
         }
 
         public static class EventManager
         {
             public delegate void GenericEvent();
             public static GenericEvent UpdateSettings;
+            public static GenericEvent SaveFileLoaded;
         }
     }
 
@@ -319,16 +337,36 @@ namespace NCore
     {
         public static class Save
         {
-            private static string playerName;
-            public static SaveData saveData;
-            public static class IO
+            private static string currentFileName;
+            public static SaveData currentSaveData;
+            private static SaveData lastSaveData;
+
+            public static string[] GetSavesList()
+            {
+                return SavesList();
+            }
+
+            public static void LoadSave(string filename)
+            {
+                currentSaveData = IO.Read(filename);
+                lastSaveData = currentSaveData;
+
+                if(currentFileName != "")
+                {
+                    EventManager.SaveFileLoaded();
+                }
+            }
+
+            private static class IO
             {
                 //Read a file with the name "filename" and pass its data into saveData
-                public static void Read(string filename)
+                public static SaveData Read(string filename)
                 {
+                    SaveData newSaveData;
+
                     if (File.Exists(Config.SavesFileLocation + "/" + filename))
                     {
-                        SaveData newSaveData = new SaveData();
+                        
                         SaveData tmp = new SaveData();
 
                         XmlSerializer xs = new XmlSerializer(typeof(SaveData));
@@ -349,49 +387,56 @@ namespace NCore
                             NDebug.Log( new NDebug.Info(NDebug.DebugType.message, "SUC_IO_DESERIALIZED: " + filename));
                             tr.Close();
                             newSaveData = tmp;
-                            playerName = filename;
+                            
                         }
 
-                        saveData = newSaveData;
+                        currentFileName = filename;
+                        return newSaveData;
                     }
                     else
                     {
                         NDebug.Log(new NDebug.Info(NDebug.DebugType.warning, "ERR_IO_NO_FILE_EXISTS: " + filename));
                         throw new Exception("ERR_NO_FILE_EXISTS");
+                        currentFileName = "";
+                        return newSaveData;
                     }
                 }
+            }
 
                 //Write a new file with name "filename"
                 public static void WriteNew(string filename, string playername)
                 {
                     SaveData newSaveData = new SaveData();
 
-                    if (!File.Exists(Config.SavesFileLocation + "/" + filename))
+                    if(filename != "" && filename != null)
                     {
-                        XmlSerializer xs = new XmlSerializer(typeof(SaveData));
-                        TextWriter tw = new StreamWriter(Config.SavesFileLocation + "/" + filename);
+                        if (!File.Exists(Config.SavesFileLocation + "/" + filename))
+                        {
+                            XmlSerializer xs = new XmlSerializer(typeof(SaveData));
+                            TextWriter tw = new StreamWriter(Config.SavesFileLocation + "/" + filename);
 
-                        xs.Serialize(tw, newSaveData);
-                        tw.Close();
-                    }
-                    else
-                    {
-                        NDebug.Log(new NDebug.Info(NDebug.DebugType.warning, "ERR_FILE_ALREADY_EXISTS: " + filename));
-                        throw new Exception("ERR_FILE_ALREADY_EXISTS");
+                            xs.Serialize(tw, newSaveData);
+                            tw.Close();
+                        }
+                        else
+                        {
+                            NDebug.Log(new NDebug.Info(NDebug.DebugType.warning, "ERR_FILE_ALREADY_EXISTS: " + filename));
+                            throw new Exception("ERR_FILE_ALREADY_EXISTS");
+                        }
                     }
                 }
 
                 //Writes the current save data to the file named "playerName"
                 public static void Write()
                 {
-                    if (File.Exists(Config.SavesFileLocation + "/" + playerName))
+                    if (File.Exists(Config.SavesFileLocation + "/" + currentFileName))
                     {
-                        if (saveData != null && (playerName != null && playerName != ""))
+                        if (currentFileName != null && currentFileName != "")
                         {
                             XmlSerializer xs = new XmlSerializer(typeof(SaveData));
-                            TextWriter tw = new StreamWriter(Config.SavesFileLocation + "/" + playerName);
+                            TextWriter tw = new StreamWriter(Config.SavesFileLocation + "/" + currentFileName);
 
-                            xs.Serialize(tw, saveData);
+                            xs.Serialize(tw, currentSaveData);
                             tw.Close();
                         }
                         else
@@ -402,7 +447,7 @@ namespace NCore
                     }
                     else
                     {
-                        NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_NO_FILE_EXISTS: " + playerName));
+                        NDebug.Log(new NDebug.Info(NDebug.DebugType.error, "ERR_NO_FILE_EXISTS: " + currentFileName));
                         throw new Exception("ERR_NO_FILE_EXISTS");
                     }
                 }
@@ -411,8 +456,7 @@ namespace NCore
                 public static void Clear()
                 {
                     //Clears save data currently cached in saveData
-                    saveData = null;
-                    playerName = null;
+                    currentFileName = "";
 
                     NDebug.Log(new NDebug.Info(NDebug.DebugType.message, "SUC_IO_CLEARED_CACHE"));
                 }
@@ -451,9 +495,9 @@ namespace NCore
             }
         }
 
-        public class SaveData
+        public struct SaveData
         {
-            //DATA YOU WANT TO SAVE GOES HERE
+            public string playerName;
         }
     }
 
@@ -633,4 +677,3 @@ namespace NCore
             #endregion
         }
     }
-}

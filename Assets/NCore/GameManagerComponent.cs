@@ -12,7 +12,7 @@ public class GameManagerComponent : MonoBehaviour
     private void Awake()
     {
         DontDestroyOnLoad(gameObject);
-        EventManager.UpdateSettings += UpdateSettings;
+        GameManager.Awake();
     }
 
     private void Start()
@@ -21,11 +21,5 @@ public class GameManagerComponent : MonoBehaviour
         {
             GameManager.Start(defaultScene);
         }
-    }
-
-    //Default event subscribers to prevent null reference exceptions.
-    public void UpdateSettings()
-    {
-
     }
 }

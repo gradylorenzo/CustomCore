@@ -1,8 +1,10 @@
 ﻿using NCore.Settings;
+using NCore.Save;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using NCore.Managers;
 
 public class NMainMenuController : MonoBehaviour
 {
@@ -142,6 +144,7 @@ public class NMainMenuController : MonoBehaviour
     }
     #endregion
 
+    #region Settings Panels
     [Serializable]
     public class SettingsPanelComponents
     {
@@ -279,4 +282,29 @@ public class NMainMenuController : MonoBehaviour
 
         NDebug.Log(new NDebug.Info(newSettings.graphics.enablePostProcessing.ToString()));
     }
+    #endregion
+
+    #region Save List Panel
+
+    private string selectedSave = "";
+    private string[] savesList;
+    private void StartSavesList()
+    {
+        savesList = Save.GetSavesList();
+    }
+
+    public void SetSelectedSave(string save)
+    {
+        selectedSave = save;
+    }
+
+    public void LoadSelectedSave()
+    {
+        if(selectedSave != "" && selectedSave != null)
+        {
+            Save.LoadSave(selectedSave);
+        }
+    }
+
+    #endregion
 }
