@@ -32,6 +32,7 @@ public class FirstRunUI : MonoBehaviour
     public void SecondPanel()
     {
         StartCoroutine("moveToSecondPanel");
+        NDebug.Log(new NDebug.Info("Test"));
     }
 
     public void ThirdPanel()
